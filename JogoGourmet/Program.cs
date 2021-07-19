@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
+using JogoGourmet.Entities;
 
 namespace JogoGourmet
 {
@@ -9,7 +11,6 @@ namespace JogoGourmet
         {
             var menu = new Menu();
             menu.SetInitialDishes();
-            // Se não => Bolo de choco - Implementar caminhos com um if
 
             while (true)
             {
@@ -41,12 +42,12 @@ namespace JogoGourmet
 
         static Menu AskDishCategory(Menu menu)
         {
-            var firstCategory = menu.Dishes.FirstOrDefault(d => d.Category is not null && d.Name is null);
+            var dishFromFirstCategory = menu.Dishes.FirstOrDefault(d => d.Category is not null && d.Name is null);
             
-            if(firstCategory is null) 
+            if(dishFromFirstCategory is null) 
                 return menu;
             
-            Console.WriteLine($"O prato que você pensou é {firstCategory.Category.Name}?");
+            Console.WriteLine($"O prato que você pensou é {dishFromFirstCategory.Category.Name}?");
 
             ShowOptions();
             
@@ -57,9 +58,9 @@ namespace JogoGourmet
             switch (option)
             {
                 case 1: 
-                    return AskDishFromCategory(menu, firstCategory);
+                    return AskDishFromCategory(menu, dishFromFirstCategory);
                 case 2: 
-                    return AskDishName(menu); 
+                    return AskDishName(menu, dishFromFirstCategory); 
                 default: 
                     Console.WriteLine("Opção inválida");
                     break;
@@ -68,17 +69,20 @@ namespace JogoGourmet
             return menu;
         }
 
-        static Menu AskDishName(Menu menu)
+        static Menu AskDishName(Menu menu, Dish dish)
         {
-            var otherDishes = menu.Dishes.Where(d => d.Category is not null && d.Category.Name is not "Massa").ToList();
-            var firstDish = otherDishes.FirstOrDefault();
+            var otherDishes = menu.Dishes.Where(d => d.Category is not null 
+                                                     && d.Category.Name != dish.Category.Name 
+                                                     && d.Category.SubCategories.All(s => s.BaseCategoryName != dish.Category.Name)).ToList();
+            
+            var firstDish = otherDishes.FirstOrDefault(); 
 
             if (firstDish == null) 
                 return menu;
 
-            foreach (var dish in otherDishes)
+            foreach (var item in otherDishes)
             {
-                Console.WriteLine($"O prato que você pensou é {dish.Name}?");
+                Console.WriteLine($"O prato que você pensou é {item.Name}?");
 
                 ShowOptions();
 
@@ -107,9 +111,14 @@ namespace JogoGourmet
         
         static Menu AskDishFromCategory(Menu menu, Dish dish)
         {
-            var dishesWithinCategory = menu.Dishes.Where(d => d.Category is not null && d.Name is not null).ToList();
-            var firstDishWithinCategory = dishesWithinCategory.FirstOrDefault();
+            var dishesWithinCategory = new List<Dish>();
+            var subCategoryNames = dish.Category.SubCategories.Select(s => s.Name);
             
+            foreach (var subCategoryName in subCategoryNames)
+            {
+                dishesWithinCategory.AddRange(menu.Dishes.Where(d => d.SubCategory is not null && d.SubCategory.Name.Contains(subCategoryName)));
+            }
+
             foreach (var item in dishesWithinCategory)
             {
                 Console.WriteLine($"O prato que você pensou é {item.Name}?");
@@ -135,7 +144,9 @@ namespace JogoGourmet
                 }
             }
             
+            var firstDishWithinCategory = menu.Dishes.FirstOrDefault(d => d.Category is not null && d.Category.Name == dish.Category.Name && d.Name is not null);
             menu.AddDish(AskDishDifference(firstDishWithinCategory, true));
+            
             return menu;
         }
         
@@ -153,6 +164,7 @@ namespace JogoGourmet
 
             return ExecuteComplete(answer, dish, isSubCategory);
         }
+        
         static Dish ExecuteComplete(string dishName, Dish dish, bool isSubCategory = false)
         {
             var answer = Console.ReadLine();
@@ -161,10 +173,12 @@ namespace JogoGourmet
                 return null;
             
             if(!isSubCategory)
-                return new Dish(dishName, new Category(answer));
+                return new Dish(dishName, new Category(answer), null);
 
-            dish.Category.AddCategory(new Category(answer));
-            return new Dish(dishName, new Category(answer));
+            var subCategory = new SubCategory(answer, dish.Category.Name);
+            
+            dish.Category.AddSubCategory(subCategory);
+            return new Dish(dishName, null, subCategory);
         }
     }
 }

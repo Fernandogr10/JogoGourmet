@@ -1,18 +1,17 @@
 ﻿using System.Collections.Generic;
-using System.Linq;
 
-namespace JogoGourmet
+namespace JogoGourmet.Entities
 {
     public class Menu
     {
-        private List<Dish> _dishes;
+        private readonly List<Dish> _dishes;
         
         public Menu()
         {
             _dishes = new List<Dish>();
         }
         
-        public IReadOnlyList<Dish> Dishes { get { return _dishes.ToArray(); } }
+        public IReadOnlyList<Dish> Dishes => _dishes.ToArray();
 
         public void AddDish(Dish dish)
         {
@@ -24,13 +23,16 @@ namespace JogoGourmet
         
         public List<Dish> SetInitialDishes()
         {
-            var firsDishCategory = new Category("Massa");
-            var secondDishCategory = new Category("Bolo");
+            var massa = new Category("Massa");
+            var massaItaliana = new SubCategory("Italiana", massa.Name);
+            
+            massa.AddSubCategory(massaItaliana);
+            
             var initialDishes = new List<Dish>
             {
-                new Dish(null, firsDishCategory),
-                new Dish(name: "Bolo de chocolate", secondDishCategory),
-                new Dish(name: "Lasanha", firsDishCategory)
+                new Dish(null, massa, null),
+                new Dish(name: "Bolo de chocolate", new Category("Bolo"), null),
+                new Dish(name: "Lasanha", massa, massaItaliana)
             };
             
             _dishes.AddRange(initialDishes);
