@@ -37,6 +37,7 @@ namespace JogoGourmet
                 return short.Parse(answer);
             
             Console.WriteLine("Opção invalida");
+            Console.ReadKey();
             return 0;
         }
 
@@ -63,6 +64,7 @@ namespace JogoGourmet
                     return AskDishName(menu, dishFromFirstCategory); 
                 default: 
                     Console.WriteLine("Opção inválida");
+                    Console.ReadKey();
                     break;
             }
 
@@ -95,12 +97,14 @@ namespace JogoGourmet
                     case 1:
                         Console.WriteLine("Acertei de novo!");
                         Console.WriteLine();
+                        Console.ReadKey();
                         return menu;
                     case 2:
                         continue;
                     default:
                         Console.WriteLine("Opção inválida");
                         Console.WriteLine();
+                        Console.ReadKey();
                         break;
                 }
             }
@@ -134,12 +138,14 @@ namespace JogoGourmet
                     case 1: 
                         Console.WriteLine("Acertei de novo!");
                         Console.WriteLine();
+                        Console.ReadKey();
                         return menu;
                     case 2: 
                         continue;
                     default: 
                         Console.WriteLine("Opção inválida");
                         Console.WriteLine();
+                        Console.ReadKey();
                         break;
                 }
             }
